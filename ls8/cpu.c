@@ -26,6 +26,16 @@ void cpu_load(struct cpu *cpu)
   // TODO: Replace this with something less hard-coded
 }
 
+unsigned char cpu_ram_read(struct cpu *cpu, unsigned char address)
+{
+  return cpu-> ram[address];
+}
+
+void cpu_ram_write(struct cpu *cpu, unsigned char address, unsigned char value)
+{
+  cpu-> ram[address] = value;
+}
+
 /**
  * ALU
  */
@@ -45,9 +55,11 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
  */
 void cpu_run(struct cpu *cpu)
 {
+  int cur_index = 0;
   int running = 1; // True until we get a HLT instruction
 
   while (running) {
+    unsigned char command = cpu->ram[cur_index];
     // TODO
     // 1. Get the value of the current instruction (in address PC).
     // 2. Figure out how many operands this next instruction requires
@@ -64,4 +76,7 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
+  cpu->pc = 0;
+  cpu->registers = calloc(8, sizeof(unsigned char));
+  cpu->ram = calloc(256, sizeof(unsigned char));
 }
