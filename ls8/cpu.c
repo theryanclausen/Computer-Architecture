@@ -1,30 +1,54 @@
 #include "cpu.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define DATA_LEN 6
 
+//#define DATA_LEN 6
+
+void cpu_ram_write(struct cpu *cpu, unsigned char address, unsigned char value)
+{
+  cpu-> ram[address] = value;
+}
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *path)
 {
-  char data[DATA_LEN] = {
-    // From print8.ls8
-    0b10000010, // LDI R0,8
-    0b00000000,
-    0b00001000,
-    0b01000111, // PRN R0
-    0b00000000,
-    0b00000001  // HLT
-  };
+  // char data[DATA_LEN] = {
+  //   // From print8.ls8
+  //   0b10000010, // LDI R0,8
+  //   0b00000000,
+  //   0b00001000,
+  //   0b01000111, // PRN R0
+  //   0b00000000,
+  //   0b00000001  // HLT
+  // };
 
   int address = 0;
 
-  for (int i = 0; i < DATA_LEN; i++) {
-    cpu->ram[address++] = data[i];
+  // for (int i = 0; i < DATA_LEN; i++) {
+  //   cpu->ram[address++] = data[i];
+  // }
+
+  // TODO: Replace this with something less hard-code
+  FILE *f = fopen(path, "r");
+  if (f == NULL)
+  {
+    printf("could not open file");
+    exit(1);
+  }
+  char line[256];
+  while (fgets(line, sizeof(line),f) != NULL)
+  {
+    char *end;
+    unsigned char val = strtoul(line, &end, 2);
+
+    if (line == end)
+    {
+      continue;
+    }
+    cpu_ram_write(cpu, address++, val);
   }
 
-  // TODO: Replace this with something less hard-coded
 }
 
 unsigned char cpu_ram_read(struct cpu *cpu, unsigned char address)
@@ -32,10 +56,7 @@ unsigned char cpu_ram_read(struct cpu *cpu, unsigned char address)
   return cpu-> ram[address];
 }
 
-void cpu_ram_write(struct cpu *cpu, unsigned char address, unsigned char value)
-{
-  cpu-> ram[address] = value;
-}
+
 
 /**
  * ALU
@@ -88,6 +109,7 @@ void cpu_run(struct cpu *cpu)
         break;
 
       default:
+      printf("skip more operands \n");
         break;
         
     }
