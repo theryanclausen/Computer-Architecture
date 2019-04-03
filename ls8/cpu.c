@@ -65,8 +65,19 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 {
   switch (op) {
     case ALU_MUL:
-      // TODO
       cpu->registers[regA] *= cpu->registers[regB];
+      break;
+
+    case ALU_ADD:
+      cpu->registers[regA] += cpu->registers[regB];
+      break;
+
+    case ALU_SUB:
+      cpu->registers[regA] -= cpu->registers[regB];
+      break;
+
+    case ALU_DIV:
+      cpu->registers[regA] /= cpu->registers[regB];
       break;
 
     // TODO: implement more ALU ops
@@ -83,17 +94,32 @@ void cpu_run(struct cpu *cpu)
   unsigned char operand1; // location
   unsigned char operand2; // value
 
-  while (running) {
+  while (running) 
+  {
     
     // TODO
     // 1. Get the value of the current instruction (in address PC).
     unsigned char command = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
+    unsigned char opCount = command & OPCM;
     // 3. Get the appropriate value(s) of the operands following this instruction
-    operand1 = cpu_ram_read(cpu, cpu->pc + 1);
-    operand2 = cpu_ram_read(cpu, cpu->pc + 2);
+    switch(opCount)
+    {
+      case OPC1:
+        operand1 = cpu_ram_read(cpu, cpu->pc + 1);
+        break;
+      case OPC2:
+        operand1 = cpu_ram_read(cpu, cpu->pc + 1);
+        operand2 = cpu_ram_read(cpu, cpu->pc + 2);
+        break;
+      default:
+        break;
+    }
+    
+    
     // 4. switch() over it to decide on a course of action.
-    switch(command){
+    switch(command)
+    {
       case HLT:
         running = 0;
         break;
@@ -115,8 +141,30 @@ void cpu_run(struct cpu *cpu)
         cpu->pc ++;
         break;
 
+      case DIV:
+        alu(cpu, ALU_DIV, operand1, operand2);
+        cpu->pc ++;
+        cpu->pc ++;
+        break;
+
+      case ADD:
+        alu(cpu, ALU_ADD, operand1, operand2);
+        cpu->pc ++;
+        cpu->pc ++;
+        break;
+
+      case SUB:
+        alu(cpu, ALU_SUB, operand1, operand2);
+        cpu->pc ++;
+        cpu->pc ++;
+        break;
+
+      case JMP:
+        cpu->pc = cpu->registers[operand1];
+        break;
+
       default:
-      printf("skip more operands \n");
+      printf("skip more lines \n");
         break;
         
     }
