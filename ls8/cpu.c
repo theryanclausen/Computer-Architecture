@@ -103,6 +103,8 @@ void cpu_run(struct cpu *cpu)
     // 2. Figure out how many operands this next instruction requires
     unsigned char opCount = command & OPCM;
     // 3. Get the appropriate value(s) of the operands following this instruction
+    
+    
     switch(opCount)
     {
       case OPC1:
@@ -163,6 +165,18 @@ void cpu_run(struct cpu *cpu)
         cpu->pc = cpu->registers[operand1];
         break;
 
+      case PUSH:
+        cpu->registers[7] -= 1;
+        cpu_ram_write(cpu , cpu->registers[7] ,cpu->registers[operand1]);
+        cpu->pc ++;
+        break;
+
+      case POP:
+        cpu->registers[operand1] = cpu_ram_read(cpu, cpu->registers[7]);
+        cpu->registers[7] ++;
+        cpu->pc ++;
+        break;
+
       default:
       printf("skip more lines \n");
         break;
@@ -184,4 +198,5 @@ void cpu_init(struct cpu *cpu)
   cpu->pc = 0;
   cpu->registers = calloc(8, sizeof(unsigned char));
   cpu->ram = calloc(256, sizeof(unsigned char));
+  cpu->registers[7] = 0xF4;
 }
