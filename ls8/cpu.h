@@ -10,6 +10,7 @@ struct cpu {
   unsigned char *registers;
   // ram (array)
   unsigned char *ram;
+  unsigned char *flag;
 };
 
 // ALU operations
@@ -18,7 +19,8 @@ enum alu_op {
 	// Add more here
   ALU_ADD,
   ALU_SUB,
-  ALU_DIV
+  ALU_DIV,
+  ALU_CMP
   //ALU_NOT
 };
 
@@ -42,6 +44,7 @@ enum alu_op {
 #define PRA  0b01001000
 #define CALL 0b01010000 
 #define RET  0b00010001
+#define CMP  0b10100111
 
 #define INT  0b01010010 
 #define IRET 0b00010011
@@ -57,6 +60,12 @@ enum alu_op {
 #define OPCM 0b11000000
 #define OPC1 0b01000000
 #define OPC2 0b10000000
+
+#define FL_INIT 0b00000000
+#define FL_MSK  0b00000111
+#define FL_LESS 0b00000100
+#define FL_GRTR 0b00000010
+#define FL_EQUL 0b00000001
 
 // TODO: more instructions here. These can be used in cpu_run().
 

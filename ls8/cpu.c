@@ -80,6 +80,21 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       cpu->registers[regA] /= cpu->registers[regB];
       break;
 
+    case ALU_CMP:
+    //   if (cpu->registers[regA] == cpu->registers[regB])
+    //   {
+    //     cpu->flag = FL_EQUL;
+    //   }
+    //   if (cpu->registers[regA] > cpu->registers[regB])
+    //   {
+    //     cpu->flag = FL_GRTR;
+    //   }
+    //   if (cpu->registers[regA] < cpu->registers[regB])
+    //   {
+    //     cpu->flag = FL_LESS;
+    //   }
+      break;
+
     // TODO: implement more ALU ops
   }
 }
@@ -126,6 +141,12 @@ void cpu_run(struct cpu *cpu)
         running = 0;
         break;
 
+      case CALL:
+        cpu->registers[7] -= 1;
+        cpu_ram_write(cpu, cpu->registers[7], cpu->pc + 1);
+        cpu->pc = cpu->registers[operand1] -1;
+        break;
+
       case PRN:
         printf("%d\n", cpu->registers[operand1]);
         cpu->pc ++;
@@ -133,37 +154,76 @@ void cpu_run(struct cpu *cpu)
 
       case LDI:
         cpu->registers[operand1] = operand2;
-        cpu->pc ++;
-        cpu->pc ++;
+        cpu->pc += 2;
+        break;
+
+      case LD:
+        cpu->registers[operand1] = cpu->registers[operand2];
         break;
 
       case MUL:
         alu(cpu, ALU_MUL, operand1, operand2);
-        cpu->pc ++;
-        cpu->pc ++;
+        cpu->pc += 2;
         break;
 
       case DIV:
         alu(cpu, ALU_DIV, operand1, operand2);
-        cpu->pc ++;
-        cpu->pc ++;
+        cpu->pc += 2;
+        break;
+
+      case CMP:
+        alu(cpu, ALU_CMP, operand1, operand2);
+        cpu->pc += 2;
         break;
 
       case ADD:
         alu(cpu, ALU_ADD, operand1, operand2);
-        cpu->pc ++;
-        cpu->pc ++;
+        cpu->pc += 2;
         break;
 
       case SUB:
         alu(cpu, ALU_SUB, operand1, operand2);
-        cpu->pc ++;
-        cpu->pc ++;
+        cpu->pc += 2;
         break;
 
       case JMP:
         cpu->pc = cpu->registers[operand1];
         break;
+
+      // case JEQ:
+      //   if( cpu->flag == FL_EQUL )
+      //   {
+      //     cpu->pc = cpu->registers[operand1];
+      //   }
+      //   break;
+
+      // case JGE:
+      //   if( cpu->flag == FL_GRTR || cpu->flag == FL_EQUL)
+      //   {
+      //     cpu->pc = cpu->registers[operand1];
+      //   }
+      //   break;
+
+      // case JGT:
+      //   if( cpu->flag == FL_GRTR )
+      //   {
+      //     cpu->pc = cpu->registers[operand1];
+      //   }
+      //   break;
+
+      // case JLE:
+      //   if( cpu->flag == FL_LESS || cpu->flag == FL_EQUL)
+      //   {
+      //     cpu->pc = cpu->registers[operand1];
+      //   }
+      //   break;
+
+      // case JLT:
+      //   if( cpu->flag == FL_LESS )
+      //   {
+      //     cpu->pc = cpu->registers[operand1];
+      //   }
+      //   break;
 
       case PUSH:
         cpu->registers[7] -= 1;
@@ -177,8 +237,13 @@ void cpu_run(struct cpu *cpu)
         cpu->pc ++;
         break;
 
+      case RET:
+        cpu->pc = cpu_ram_read(cpu, cpu->registers[7]);
+        cpu->registers[7] ++;
+        break;
+
       default:
-      printf("skip more lines \n");
+      printf("inst %d \nskip more lines \n", cpu->pc);
         break;
         
     }
@@ -199,4 +264,5 @@ void cpu_init(struct cpu *cpu)
   cpu->registers = calloc(8, sizeof(unsigned char));
   cpu->ram = calloc(256, sizeof(unsigned char));
   cpu->registers[7] = 0xF4;
+  cpu->flag = FL_INIT;
 }
